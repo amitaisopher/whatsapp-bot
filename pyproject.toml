@@ -1,0 +1,23 @@
+[project]
+name = "whatsapp-chatbot"
+version = "0.1.0"
+description = "WhatsApp Chatbot Boilerplate"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "arq>=0.26.3",
+    "fastapi[all,standard]>=0.118.0",
+    "httpx>=0.28.1",
+    "loguru>=0.7.3",
+    "python-whatsapp>=0.0.1",
+    "sentry-sdk>=2.39.0",
+    "whatsapp-python>=4.3.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]
+
+[tool.pytest.ini_options]
+pythonpath = "."

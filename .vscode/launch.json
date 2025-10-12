@@ -1,0 +1,63 @@
+{
+  "configurations": [
+    {
+      "name": "Python Debugger: Current File",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+    },
+    {
+      "name": "FastAPI App - PROD",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/app/main.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "justMyCode": true
+    },
+    {
+      "name": "FastAPI App - DEV",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "app.create_app:create_app",
+        "--factory",
+        "--reload",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "justMyCode": true
+    },
+    {
+      "name": "Arq Worker",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "arq",
+      "args": [
+        "tasks.WorkerSettings",
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/app/workers",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "justMyCode": true
+    }
+  ]
+}
