@@ -9,7 +9,7 @@ EnvironmentType = Literal["development", "production", "testing"]
 class Settings(BaseSettings):
     """Application configuration settings."""
 
-    app_name: str = "WhatsApp Chatbot"
+    app_name: str = Field(default="WhatsApp Chatbot", alias="APP_NAME")
     environment: EnvironmentType = Field(
         default="development",
     )

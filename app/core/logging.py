@@ -1,4 +1,5 @@
 import sys
+from functools import lru_cache
 import logging
 from loguru import logger
 from app.core.config import settings
@@ -7,17 +8,24 @@ from sentry_sdk.integrations.logging import LoggingIntegration
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 
 
+def verify_sentry_configuration() -> bool:
+    """
+    Check if required environment variables for integration with Sentry exist.
+    """
+    return settings.sentry_enabled and bool(settings.sentry_dsn)
+
+
 def setup_sentry_logging() -> None:
     """
     Setup logging configuration for the application.
     """
     sentry_logger = LoggingIntegration(
         level=logging.INFO,  # Capture info and above as breadcrumbs
-        event_level=logging.ERROR,  # Send errors as events to Sentry
+        event_level=logging.ERROR  # Send errors as events to Sentry
     )
 
     # Configure Sentry for error tracking
-    if settings.sentry_enabled and settings.sentry_dsn:
+    if verify_sentry_configuration():
         sentry_sdk.init(
             dsn=settings.sentry_dsn,
             integrations=[FastApiIntegration(), sentry_logger],
@@ -29,22 +37,6 @@ def setup_sentry_logging() -> None:
         logger.info("Sentry logging initialized")
     else:
         logger.info("Sentry logging disabled")
-
-
-def verify_sentry_configuration() -> bool:
-    """
-    Check if required environment variables for integration with Sentry exist.
-    """
-    return settings.sentry_enabled and bool(settings.sentry_dsn)
-
-
-ENV = settings.environment
-logger.remove()  # Remove default logger
-
-if ENV == "development":
-    logger.add(sys.stdout)
-elif ENV == "production":
-    logger.add(sys.stdout, serialize=True)
 
 
 class InterceptHandler(logging.Handler):
@@ -69,12 +61,31 @@ class InterceptHandler(logging.Handler):
         )
 
 
-# Create a logger that can be used throughout the application
-application_logger = logging.getLogger("app_logger")
-application_logger.setLevel(logging.INFO)
-application_logger.addHandler(InterceptHandler())
-application_logger.addHandler(logging.StreamHandler(sys.stdout))
-
-
 def setup_logging() -> None:
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(name)s | %(message)s")
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s | %(levelname)s | %(name)s | %(message)s")
+
+
+def setup_worker_logging():
+    """
+    Set up logging for the Arq worker.
+    """
+    logger.remove()
+    logger.add(
+        sys.stdout,
+        level="INFO",
+        colorize=True,
+    )
+    return logger
+
+
+@lru_cache()
+def get_application_logger(name: str) -> logging.Logger:
+    """
+    Get a logger instance for the application.
+    """
+    worker_logger = logging.getLogger(name)
+    worker_logger.handlers.clear()
+    worker_logger.setLevel(logging.INFO)
+    worker_logger.addHandler(InterceptHandler())
+    return worker_logger
