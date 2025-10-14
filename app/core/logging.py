@@ -2,6 +2,7 @@ import sys
 from functools import lru_cache
 import logging
 from loguru import logger
+import loguru
 from app.core.config import settings
 import sentry_sdk
 from sentry_sdk.integrations.logging import LoggingIntegration
@@ -60,15 +61,9 @@ class InterceptHandler(logging.Handler):
             level, record.getMessage()
         )
 
-
-def setup_logging() -> None:
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s | %(levelname)s | %(name)s | %(message)s")
-
-
-def setup_worker_logging():
+def setup_logging():
     """
-    Set up logging for the Arq worker.
+    Set up logging for use throughout the application.
     """
     logger.remove()
     logger.add(
@@ -76,16 +71,11 @@ def setup_worker_logging():
         level="INFO",
         colorize=True,
     )
-    return logger
-
 
 @lru_cache()
-def get_application_logger(name: str) -> logging.Logger:
+def get_application_logger() -> "loguru.Logger":
     """
-    Get a logger instance for the application.
+    Get a loguru logger instance for the application.
     """
-    worker_logger = logging.getLogger(name)
-    worker_logger.handlers.clear()
-    worker_logger.setLevel(logging.INFO)
-    worker_logger.addHandler(InterceptHandler())
-    return worker_logger
+    setup_logging()
+    return logger

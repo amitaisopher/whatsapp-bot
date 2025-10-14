@@ -1,9 +1,10 @@
 # tasks.py
 from httpx import AsyncClient
+import asyncio
 
 from app.core.redis import REDIS_SETTINGS
 from app.services.whatsapp import WhatsAppService
-from app.core.logging import get_application_logger, setup_worker_logging
+from app.core.logging import get_application_logger
 
 
 async def download_content(ctx, url):
@@ -13,6 +14,7 @@ async def download_content(ctx, url):
     # print(f'{url}: {response.text:.80}...')
     # return len(response.text)
     logger.info(f'Allegedly downloaded content from {url}')
+    await asyncio.sleep(5)  # Simulate network delay
     return f'Downloaded content from {url}'
 
 
@@ -25,7 +27,7 @@ async def send_whatsapp_message(ctx, to: str, content: str):
 
 
 async def startup(ctx):
-    logger = setup_worker_logging()
+    logger = get_application_logger()
     ctx['session'] = AsyncClient()
     ctx['whatsapp_service'] = WhatsAppService()
     ctx['logger'] = logger

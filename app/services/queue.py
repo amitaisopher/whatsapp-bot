@@ -60,6 +60,8 @@ if __name__ == "__main__":
     async def main():
         async with ArqService(REDIS_SETTINGS) as arq_service:
             job: Job | None = await arq_service.enqueue('download_content', 'https://zubi.com')
+            job: Job | None = await arq_service.enqueue('download_content', 'https://zubi.com')
+            job: Job | None = await arq_service.enqueue('download_content', 'https://zubi.com')
             if job:
                 print(f'Enqueued job: {job.job_id}')
             else:
