@@ -3,7 +3,7 @@ from fastapi.responses import PlainTextResponse, JSONResponse
 from app.core.auth import (
     verify_whatsapp_token,
     verify_whatsapp_payload_signature,
-    verify_customer_id,
+    verify_customer_api_key,
 )
 from typing import Annotated
 from app.services.whatsapp import get_whatsapp_sevice, WhatsAppService
@@ -12,10 +12,10 @@ router = APIRouter()
 
 
 @router.get(
-    "/hook/{customer_id}", tags=["WhatsApp"], dependencies=[Depends(verify_customer_id)]
+    "/hook/{customer_api_key}", tags=["WhatsApp"], dependencies=[Depends(verify_customer_api_key)]
 )
 async def register_whatsapp_webhook(
-    customer_id: Annotated[str, Path(title="Customer ID")],
+    customer_api_key: Annotated[str, Path(title="Customer API Key")],
     challenge: Annotated[str, Depends(verify_whatsapp_token)],
 ):
     """Register WhatsApp webhook."""
@@ -23,14 +23,15 @@ async def register_whatsapp_webhook(
 
 
 @router.post(
-    "/hook/{customer_id}",
+    "/hook/{customer_api_key}",
     tags=["WhatsApp"],
-    dependencies=[Depends(verify_whatsapp_payload_signature), Depends(verify_customer_id)],
+    dependencies=[Depends(verify_whatsapp_payload_signature),
+                  Depends(verify_customer_api_key)],
 )
-async def receive_whatsapp_message( 
-    req: Request, 
-    customer_id: Annotated[str, Path(title="Customer ID")],
-    whatsapp_service: WhatsAppService = Depends(get_whatsapp_sevice)):
+async def receive_whatsapp_message(
+        req: Request,
+        customer_api_key: Annotated[str, Path(title="Customer API Key")],
+        whatsapp_service: WhatsAppService = Depends(get_whatsapp_sevice)):
     """Receive WhatsApp message, enqueue the message for processing, and return a 200 OK response."""
     body = await req.json()
     await whatsapp_service.handle_incoming_message_and_push_to_queue(body)

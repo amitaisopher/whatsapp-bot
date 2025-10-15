@@ -2,7 +2,7 @@ import hashlib
 import hmac
 import logging
 
-from fastapi import HTTPException, Request
+from fastapi import HTTPException, Request, status
 from app.core.config import settings
 
 
@@ -43,19 +43,20 @@ async def verify_whatsapp_payload_signature(request: Request):
     """
     Verify the payload signature for WhatsApp Webhook
     """
-    signature = request.headers.get("X-Hub-Signature-256", "")[7:]  # Remove "sha256="
+    signature = request.headers.get(
+        "X-Hub-Signature-256", "")[7:]  # Remove "sha256="
     body = await request.body()
     if not validate_signature(body.decode("utf-8"), signature):
         logging.info("Signature verification failed")
-        raise HTTPException(status_code=403, detail="Invalid signature")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid signature")
     return True
 
 
-async def verify_customer_id(customer_id: str):
+async def verify_customer_api_key(customer_api_key: str):
     """
     Verify the customer ID from the request path exist in DB
     """
     # TODO: Implement actual DB check
-    if customer_id != "valid_customer_id":
-        raise HTTPException(status_code=404, detail="Customer not found")
+    if customer_api_key != "valid_customer_api_key":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized action")
     return True

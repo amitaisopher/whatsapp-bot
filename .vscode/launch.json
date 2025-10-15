@@ -1,4 +1,5 @@
 {
+  "version": "0.2.0",
   "configurations": [
     {
       "name": "Python Debugger: Current File",
@@ -9,22 +10,10 @@
       "cwd": "${workspaceFolder}",
       "env": {
         "PYTHONPATH": "${workspaceFolder}"
-      },
+      }
     },
     {
-      "name": "FastAPI App - PROD",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/app/main.py",
-      "console": "integratedTerminal",
-      "cwd": "${workspaceFolder}",
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}"
-      },
-      "justMyCode": true
-    },
-    {
-      "name": "FastAPI App - DEV",
+      "name": "FastAPI: Development",
       "type": "debugpy",
       "request": "launch",
       "module": "uvicorn",
@@ -40,7 +29,48 @@
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}",
       "env": {
-        "PYTHONPATH": "${workspaceFolder}"
+        "PYTHONPATH": "${workspaceFolder}",
+        "APP_ENV": "development"
+      },
+      "justMyCode": true
+    },
+    {
+      "name": "FastAPI: Staging",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "app.create_app:create_app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "APP_ENV": "staging"
+      },
+      "justMyCode": true
+    },
+    {
+      "name": "FastAPI: Production",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "app.create_app:create_app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "APP_ENV": "production"
       },
       "justMyCode": true
     },
@@ -50,10 +80,10 @@
       "request": "launch",
       "module": "arq",
       "args": [
-        "tasks.WorkerSettings",
+        "app.workers.tasks.WorkerSettings"
       ],
       "console": "integratedTerminal",
-      "cwd": "${workspaceFolder}/app/workers",
+      "cwd": "${workspaceFolder}",
       "env": {
         "PYTHONPATH": "${workspaceFolder}"
       },
