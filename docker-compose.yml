@@ -5,16 +5,29 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+      - REDIS_PASSWORD=your-very-strong-password
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
 
   api:
     build: .
-    command: uvicorn app.create_app:create_app --factory --reload --host 0.0.0.0 --port 8000
+    command: uvicorn app.create_app:create_app --reload --host 0.0.0.0 --port 8000
     volumes:
       - .:/app
     ports:
       - "8000:8000"
-    environment:
-      - PYTHONPATH=/app
+    env_file:
+      - ${ENV_FILE:-.env.development}
     depends_on:
       - redis
 
@@ -23,7 +36,7 @@ services:
     command: arq app.workers.tasks.WorkerSettings
     volumes:
       - .:/app
-    environment:
-      - PYTHONPATH=/app
+    env_file:
+      - ${ENV_FILE:-.env.development}
     depends_on:
       - redis
