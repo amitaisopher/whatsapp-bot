@@ -16,5 +16,6 @@ wheels/
 # .env files
 .env
 .env.production
-.env.development
 .env.staging
+.env.development
+.env.docker
