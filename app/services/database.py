@@ -38,15 +38,19 @@ class DatabaseService:
     async def get_api_key_of_customer(self, customer_id: str) -> str | None:
         """Get the API key of a customer by their ID"""
         customer: Customer | None = await self.find_customer_by_id(customer_id)
-        if customer:
-            res: APIResponse | str = self.db_client.from_("api_keys").select("key").eq("customer_id", customer_id).execute()
-            if isinstance(res, str):
-                raise HTTPException(status_code=500, detail=f"Database query failed: {res}")
-            if res.data and len(res.data) > 0:
-                row = res.data[0]
-                if isinstance(row, dict):
-                    key_value = row.get("key")
-                    return key_value if isinstance(key_value, str) else None
+        
+        if not customer or not customer.is_active:
+            raise HTTPException(
+                status_code=401, detail="Unauthorized action")
+        
+        res: APIResponse | str = self.db_client.from_("customer_api_keys").select("api_key").eq("customer_id", customer_id).execute()
+        if isinstance(res, str):
+            raise HTTPException(status_code=500, detail=f"Database query failed: {res}")
+        if res.data and len(res.data) > 0:
+            row = res.data[0]
+            if isinstance(row, dict):
+                key_value = row.get("api_key")
+                return key_value if isinstance(key_value, str) else None
         return None
 
 @lru_cache()

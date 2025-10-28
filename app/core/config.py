@@ -80,7 +80,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file_encoding="utf-8", extra="allow")
 
 
-@lru_cache
+@lru_cache()
 def get_settings() -> Settings:
     """
     Get the application settings.

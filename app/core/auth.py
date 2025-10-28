@@ -68,9 +68,9 @@ async def verify_customer_exist_and_active(customer_id: str, db_service: Databas
     
     return True
 
-async def get_active_api_key_of_customer(customer_id: str, db_service: DatabaseService = Depends(get_database_service)) -> str | None:
-    customer: Customer | None = await db_service.find_customer_by_id(customer_id)
-    if not customer or not customer.is_active:
+async def get_active_api_key_of_customer(customer_id: str, db_service: DatabaseService = get_database_service()) -> str | None:
+    api_key = await db_service.get_api_key_of_customer(customer_id)
+    if not api_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized action")
-    return customer.api_key
+    return api_key

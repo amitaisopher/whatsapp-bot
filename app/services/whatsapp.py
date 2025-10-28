@@ -294,10 +294,16 @@ class WhatsAppService:
         # Enqueue the message for processing
         try:
             async with queue_service:
+                # job_id: Job | None = await queue_service.enqueue(
+                #     "send_whatsapp_message",
+                #     to=whatsapp_incoming_message.from_,
+                #     content=whatsapp_incoming_message.text,
+                # )
                 job_id: Job | None = await queue_service.enqueue(
-                    "send_whatsapp_message",
-                    to=whatsapp_incoming_message.from_,
-                    content=whatsapp_incoming_message.text,
+                    "handle_incoming_whatsapp_message",
+                    from_number=whatsapp_incoming_message.from_,
+                    user_message=whatsapp_incoming_message.text,
+                    customer_id=customer_id,
                 )
                 if job_id:
                     self.logger.info(
