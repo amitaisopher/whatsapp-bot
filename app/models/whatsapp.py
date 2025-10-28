@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 class WhatsappIncomingMessage(BaseModel):
     """Model for incoming WhatsApp messages."""
@@ -8,3 +8,7 @@ class WhatsappIncomingMessage(BaseModel):
     timestamp: str
     text: str | None = None
     type: str
+
+class CustomerBoundMessage(WhatsappIncomingMessage):
+    """Model for messages bound to a specific customer."""
+    customer_id: str

@@ -1,6 +1,5 @@
 from typing import Optional
 from arq.jobs import Job
-from httpx import AsyncClient
 from arq.connections import RedisSettings, ArqRedis
 from arq import create_pool
 from functools import lru_cache

@@ -2,8 +2,10 @@ import hashlib
 import hmac
 import logging
 
-from fastapi import HTTPException, Request, status
+from fastapi import HTTPException, Request, status, Depends
 from app.core.config import settings
+from app.models.customer import Customer
+from app.services.database import get_database_service, DatabaseService
 
 
 def verify_whatsapp_token(request: Request):
@@ -48,15 +50,27 @@ async def verify_whatsapp_payload_signature(request: Request):
     body = await request.body()
     if not validate_signature(body.decode("utf-8"), signature):
         logging.info("Signature verification failed")
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid signature")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid signature")
     return True
 
 
-async def verify_customer_api_key(customer_api_key: str):
+async def verify_customer_exist_and_active(customer_id: str, db_service: DatabaseService = Depends(get_database_service)):
     """
     Verify the customer ID from the request path exist in DB
     """
     # TODO: Implement actual DB check
-    if customer_api_key != "valid_customer_api_key":
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized action")
+
+    customer: Customer | None = await db_service.find_customer_by_id(customer_id)
+    if not customer or not customer.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized action")
+    
     return True
+
+async def get_active_api_key_of_customer(customer_id: str, db_service: DatabaseService = Depends(get_database_service)) -> str | None:
+    customer: Customer | None = await db_service.find_customer_by_id(customer_id)
+    if not customer or not customer.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized action")
+    return customer.api_key

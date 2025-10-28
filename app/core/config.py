@@ -59,6 +59,13 @@ class Settings(BaseSettings):
     api_key: str | None = Field(default=None, alias="API_KEY")
     debug: bool = Field(default=True, alias="DEBUG")
 
+    # SUPABASE config
+    supabase_url: str | None = Field(default=None, alias="SUPABASE_URL")
+    supabase_key: str | None = Field(default=None, alias="SUPABASE_KEY")
+
+    # Search API config
+    search_api_url: str | None = Field(default=None, alias="SEARCH_API_URL")
+
     @property
     def upstash_redis_url(self) -> str | None:
         """Construct the Upstash Redis URL if host and password are provided."""
