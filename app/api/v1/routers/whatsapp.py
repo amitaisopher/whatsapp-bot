@@ -6,7 +6,7 @@ from app.core.auth import (
     verify_customer_exist_and_active,
 )
 from typing import Annotated
-from app.services.whatsapp import get_whatsapp_sevice, WhatsAppService
+from app.services.whatsapp import get_whatsapp_service, WhatsAppService
 
 router = APIRouter()
 
@@ -31,7 +31,7 @@ async def register_whatsapp_webhook(
 async def receive_whatsapp_message(
         req: Request,
         customer_id: Annotated[str, Path(title="Customer API Key")],
-        whatsapp_service: WhatsAppService = Depends(get_whatsapp_sevice)):
+        whatsapp_service: WhatsAppService = Depends(get_whatsapp_service)):
     """Receive WhatsApp message, enqueue the message for processing, and return a 200 OK response."""
     body = await req.json()
     await whatsapp_service.handle_incoming_message_and_push_to_queue(customer_id, body)
