@@ -22,7 +22,7 @@ def setup_sentry_logging() -> None:
     """
     sentry_logger = LoggingIntegration(
         level=logging.INFO,  # Capture info and above as breadcrumbs
-        event_level=logging.ERROR  # Send errors as events to Sentry
+        event_level=logging.ERROR,  # Send errors as events to Sentry
     )
 
     # Configure Sentry for error tracking
@@ -61,6 +61,7 @@ class InterceptHandler(logging.Handler):
             level, record.getMessage()
         )
 
+
 def setup_logging():
     """
     Set up logging for use throughout the application.
@@ -71,6 +72,7 @@ def setup_logging():
         level="INFO",
         colorize=True,
     )
+
 
 @lru_cache()
 def get_application_logger() -> "loguru.Logger":

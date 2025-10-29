@@ -12,4 +12,5 @@ class ChatResponse(BaseModel):
     cars: list[dict] | None = Field(None, description="Matching cars if found")
     session_id: str = Field(..., description="Conversation session ID")
     escalation_needed: bool = Field(
-        False, description="Whether human intervention is needed")
+        False, description="Whether human intervention is needed"
+    )

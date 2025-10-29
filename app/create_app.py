@@ -23,7 +23,6 @@ def create_app() -> FastAPI:
     # This is particularly useful for capturing errors in the app startup phase.
     setup_sentry_logging()
 
-    
     app = FastAPI(title=settings.app_name)
 
     uvicorn_logger: Logger = logging.getLogger("app")
@@ -45,11 +44,14 @@ def create_app() -> FastAPI:
         if verify_sentry_configuration():
             with sentry_sdk.configure_scope() as scope:
                 scope.set_tag("handler", "global_exception_handler")
-                scope.set_context("request", {
-                    "url": str(request.url),
-                    "method": request.method,
-                    "headers": dict(request.headers),
-                })
+                scope.set_context(
+                    "request",
+                    {
+                        "url": str(request.url),
+                        "method": request.method,
+                        "headers": dict(request.headers),
+                    },
+                )
             # Capture the exception in Sentry before handling it
             sentry_sdk.capture_exception(exc)
 
@@ -75,11 +77,14 @@ def create_app() -> FastAPI:
         if exc.status_code >= 500 and verify_sentry_configuration():
             with sentry_sdk.configure_scope() as scope:
                 scope.set_tag("handler", "http_exception_handler")
-                scope.set_context("request", {
-                    "url": str(request.url),
-                    "method": request.method,
-                    "headers": dict(request.headers),
-                })
+                scope.set_context(
+                    "request",
+                    {
+                        "url": str(request.url),
+                        "method": request.method,
+                        "headers": dict(request.headers),
+                    },
+                )
             sentry_sdk.capture_exception(exc)
 
         uvicorn_logger.warning(

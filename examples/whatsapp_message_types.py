@@ -7,8 +7,8 @@ for better type safety and maintainability.
 
 from app.services.whatsapp import (
     WhatsAppMessageProcessor,
-    WhatsAppService,
     WhatsAppMessageType,
+    WhatsAppService,
     create_default_message_processor,
 )
 
@@ -73,7 +73,7 @@ def example_all_message_types():
 def example_service_with_custom_processor():
     """Example: Create a WhatsApp service with custom message processor."""
     # Create custom processor for text and media
-    processor = WhatsAppMessageProcessor(
+    custom_processor = WhatsAppMessageProcessor(
         supported_message_types={
             WhatsAppMessageType.TEXT,
             WhatsAppMessageType.IMAGE,
@@ -81,9 +81,13 @@ def example_service_with_custom_processor():
         }
     )
 
-    # Note: This would need proper settings to actually work
-    # service = WhatsAppService(message_processor=processor)
-    print("Service would be created with custom processor supporting text, image, and video")
+    # Create service with custom processor
+    service = WhatsAppService(message_processor=custom_processor)
+
+    print(
+        f"Created service with processor supporting: {custom_processor.supported_message_types}"
+    )
+    return service
 
 
 if __name__ == "__main__":

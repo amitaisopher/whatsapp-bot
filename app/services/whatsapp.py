@@ -165,8 +165,7 @@ class WhatsAppService:
         Returns:
             Dict containing success status and response data
         """
-        message = AsyncMessage(
-            instance=self.whatsapp_client, content=content, to=to)
+        message = AsyncMessage(instance=self.whatsapp_client, content=content, to=to)
 
         try:
             # Get the asyncio Future from send()
@@ -192,8 +191,7 @@ class WhatsAppService:
                 return {"success": False, "error": error_info, "response": response}
 
         except asyncio.TimeoutError:
-            self.logger.error(
-                f"Timeout while sending WhatsApp message to {to}")
+            self.logger.error(f"Timeout while sending WhatsApp message to {to}")
             return {"success": False, "error": "Request timeout", "response": None}
         except Exception as e:
             self.logger.exception(
@@ -265,8 +263,7 @@ class WhatsAppService:
             queue_service: The queue service for processing messages
         """
         # Extract and validate message using the injected processor
-        message_data = self.message_processor.extract_message_from_webhook(
-            body)
+        message_data = self.message_processor.extract_message_from_webhook(body)
 
         if not message_data:
             # Message was filtered out or parsing failed
@@ -300,10 +297,11 @@ class WhatsAppService:
                 #     content=whatsapp_incoming_message.text,
                 # )
                 job_id: Job | None = await queue_service.enqueue(
-                    "handle_incoming_whatsapp_message",
+                    'handle_incoming_whatsapp_message',
+                    customer_id=customer_id,
                     from_number=whatsapp_incoming_message.from_,
                     user_message=whatsapp_incoming_message.text,
-                    customer_id=customer_id,
+                    message_id=whatsapp_incoming_message.id  # Pass message ID for deduplication
                 )
                 if job_id:
                     self.logger.info(

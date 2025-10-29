@@ -28,8 +28,7 @@ class Settings(BaseSettings):
     upstash_redis_rest_token: str | None = Field(
         default=None, alias="UPSTASH_REDIS_REST_TOKEN"
     )
-    upstash_redis_host: str = Field(
-        default="localhost", alias="UPSTASH_REDIS_HOST")
+    upstash_redis_host: str = Field(default="localhost", alias="UPSTASH_REDIS_HOST")
     upstash_redis_port: int = Field(default=6379, alias="UPSTASH_REDIS_PORT")
     upstash_redis_password: str | None = Field(
         default=None, alias="UPSTASH_REDIS_PASSWORD"
@@ -42,14 +41,12 @@ class Settings(BaseSettings):
     whatsapp_webhook_verification_token: str | None = Field(
         default=None, alias="WHATSAPP_WEBHOOK_VERIFICATION_TOKEN"
     )
-    whatsapp_app_secret: str | None = Field(
-        default=None, alias="WHATSAPP_APP_SECRET")
+    whatsapp_app_secret: str | None = Field(default=None, alias="WHATSAPP_APP_SECRET")
     whatsapp_app_id: str | None = Field(default=None, alias="WHATSAPP_APP_ID")
     whatsapp_recipient_waid: str | None = Field(
         default=None, alias="WHATSAPP_RECIPIENT_WAID"
     )
-    whatsapp_api_version: str | None = Field(
-        default=None, alias="WHATSAPP_API_VERSION")
+    whatsapp_api_version: str | None = Field(default=None, alias="WHATSAPP_API_VERSION")
     whatsapp_phone_number_id: str | None = Field(
         default=None, alias="WHATSAPP_PHONE_NUMBER_ID"
     )
@@ -69,6 +66,9 @@ class Settings(BaseSettings):
 
     # Search API config
     search_api_url: str | None = Field(default=None, alias="SEARCH_API_URL")
+
+    # Inventory Search timeout
+    inventory_search_timeout: int = Field(default=40, alias="INVENTORY_SEARCH_TIMEOUT")
 
     @property
     def upstash_redis_url(self) -> str | None:

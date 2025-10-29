@@ -45,17 +45,19 @@ async def verify_whatsapp_payload_signature(request: Request):
     """
     Verify the payload signature for WhatsApp Webhook
     """
-    signature = request.headers.get(
-        "X-Hub-Signature-256", "")[7:]  # Remove "sha256="
+    signature = request.headers.get("X-Hub-Signature-256", "")[7:]  # Remove "sha256="
     body = await request.body()
     if not validate_signature(body.decode("utf-8"), signature):
         logging.info("Signature verification failed")
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid signature")
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid signature"
+        )
     return True
 
 
-async def verify_customer_exist_and_active(customer_id: str, db_service: DatabaseService = Depends(get_database_service)):
+async def verify_customer_exist_and_active(
+    customer_id: str, db_service: DatabaseService = Depends(get_database_service)
+):
     """
     Verify the customer ID from the request path exist in DB
     """
@@ -64,13 +66,18 @@ async def verify_customer_exist_and_active(customer_id: str, db_service: Databas
     customer: Customer | None = await db_service.find_customer_by_id(customer_id)
     if not customer or not customer.is_active:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized action")
-    
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized action"
+        )
+
     return True
 
-async def get_active_api_key_of_customer(customer_id: str, db_service: DatabaseService = get_database_service()) -> str | None:
+
+async def get_active_api_key_of_customer(
+    customer_id: str, db_service: DatabaseService = get_database_service()
+) -> str | None:
     api_key = await db_service.get_api_key_of_customer(customer_id)
     if not api_key:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized action")
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized action"
+        )
     return api_key
