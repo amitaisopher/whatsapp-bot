@@ -17,8 +17,7 @@ class TestWhatsAppMessageProcessor:
     def test_init_sets_supported_message_types(self) -> None:
         """Test that the constructor correctly sets supported message types."""
         supported_types = {WhatsAppMessageType.TEXT, WhatsAppMessageType.IMAGE}
-        processor = WhatsAppMessageProcessor(
-            supported_message_types=supported_types)
+        processor = WhatsAppMessageProcessor(supported_message_types=supported_types)
 
         assert processor.supported_message_types == supported_types
 
