@@ -30,7 +30,7 @@
       "cwd": "${workspaceFolder}",
       "env": {
         "PYTHONPATH": "${workspaceFolder}",
-        "APP_ENV": "development"
+        "ENVIRONMENT": "development"
       },
       "justMyCode": true
     },
@@ -50,7 +50,7 @@
       "cwd": "${workspaceFolder}",
       "env": {
         "PYTHONPATH": "${workspaceFolder}",
-        "APP_ENV": "staging"
+        "ENVIRONMENT": "staging"
       },
       "justMyCode": true
     },
@@ -70,7 +70,7 @@
       "cwd": "${workspaceFolder}",
       "env": {
         "PYTHONPATH": "${workspaceFolder}",
-        "APP_ENV": "production"
+        "ENVIRONMENT": "production"
       },
       "justMyCode": true
     },
@@ -85,7 +85,8 @@
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}",
       "env": {
-        "PYTHONPATH": "${workspaceFolder}"
+        "PYTHONPATH": "${workspaceFolder}",
+        "ENVIRONMENT": "production"
       },
       "justMyCode": true
     }

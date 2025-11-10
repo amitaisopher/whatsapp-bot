@@ -32,7 +32,7 @@ services:
     env_file:
       - .env.docker
     environment:
-      - APP_ENV=docker
+      - ENVIRONMENT=docker
     depends_on:
       - redis
     restart: unless-stopped
@@ -46,7 +46,7 @@ services:
     env_file:
       - .env.docker
     environment:
-      - APP_ENV=docker
+      - ENVIRONMENT=docker
     depends_on:
       - redis
     restart: unless-stopped

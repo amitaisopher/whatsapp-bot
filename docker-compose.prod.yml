@@ -23,7 +23,7 @@ services:
     env_file:
       - .env.docker.prod
     environment:
-      - APP_ENV=production
+      - ENVIRONMENT=production
     depends_on:
       - redis
     restart: always
@@ -46,7 +46,7 @@ services:
     env_file:
       - .env.docker.prod
     environment:
-      - APP_ENV=production
+      - ENVIRONMENT=production
     depends_on:
       - redis
     restart: always

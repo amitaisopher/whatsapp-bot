@@ -85,10 +85,10 @@ def get_settings() -> Settings:
     """
     Get the application settings.
 
-    This function reads the APP_ENV environment variable to determine which .env file to load.
-    It defaults to 'development' if APP_ENV is not set.
+    This function reads the ENVIRONMENT environment variable to determine which .env file to load.
+    It defaults to 'development' if ENVIRONMENT is not set.
     """
-    app_env: str = os.getenv("APP_ENV", Environment.DEVELOPMENT.value)
+    app_env: str = os.getenv("ENVIRONMENT", Environment.DEVELOPMENT.value)
     env_file = f".env.{app_env}"
     return Settings(_env_file=env_file)
 
