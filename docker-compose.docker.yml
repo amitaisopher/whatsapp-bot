@@ -1,0 +1,55 @@
+# Docker Compose for Docker/Local Environment
+# Usage: docker-compose -f docker-compose.docker.yml up --build
+# This is the default configuration for local Docker development
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+      - REDIS_PASSWORD=your-very-strong-password
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.docker
+    environment:
+      - APP_ENV=docker
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    volumes:
+      - .:/app
+    env_file:
+      - .env.docker
+    environment:
+      - APP_ENV=docker
+    depends_on:
+      - redis
+    restart: unless-stopped
+    # Scale workers: docker-compose -f docker-compose.docker.yml up --scale worker=3
+    deploy:
+      replicas: 1

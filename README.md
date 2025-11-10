@@ -69,18 +69,79 @@ whatsapp-chatbot/
    - Type-safe message handling with enums
    - Configurable message type support
    - Dependency injection for testability
+   - Job deduplication for exactly-once processing
+
+### Docker Architecture
+
+The application uses a multi-container architecture:
+
+1. **API Container** (`Dockerfile`)
+   - FastAPI application with uvloop
+   - Handles WhatsApp webhooks
+   - Enqueues jobs to Redis
+   - Exposes port 8000
+
+2. **Worker Container** (`Dockerfile.worker`)
+   - ARQ background workers
+   - Processes queued messages
+   - Calls inventory search API
+   - Sends WhatsApp responses
+   - Scalable (multiple replicas)
+
+3. **Redis Container**
+   - Message queue (ARQ)
+   - Job deduplication cache
+   - Session storage
+
+4. **Redis Commander** (dev/docker only)
+   - Web UI for Redis inspection
+   - Available at port 8081
+
+**Job Flow:**
+```
+WhatsApp → API Container → Redis Queue → Worker Container → Inventory Search API
+                                                           ↓
+                                                   WhatsApp API (send response)
+```
+
+**Key Features:**
+- Separate API and worker processes
+- Horizontal scaling of workers
+- Job deduplication prevents duplicate processing
+- Environment-specific configurations
+- Resource limits in production
 
 ## 📋 Prerequisites
 
-- Python 3.13+
-- Redis server
+- **For Docker deployment**: Docker and Docker Compose
+- **For local development**: Python 3.13+, Redis server
 - WhatsApp Business API account
 - Supabase account (for database)
-- Upstash Redis (optional, for production)
+- Inventory Search API endpoint (configured in env files)
 
 ## 🛠️ Installation
 
-### Local Development
+### Docker Setup (Recommended)
+
+The easiest way to run the application is using Docker. We provide environment-specific configurations:
+
+```bash
+# Quick start - Development mode (detached, hot reload)
+make dev-build
+
+# View logs
+make logs ENV=dev
+```
+
+**Available environments:**
+- **Development** (`docker-compose.dev.yml`) - Hot reload, runs in detached mode, uses `.env.docker.dev`
+- **Production** (`docker-compose.prod.yml`) - Production ready, runs in detached mode, uses `.env.docker.prod`
+
+**All Docker commands run in detached mode** - containers start in the background and return your terminal prompt. Use `make logs ENV=<env>` to view output.
+
+See [docs/DOCKER-QUICKSTART.md](docs/DOCKER-QUICKSTART.md) for quick reference or [docs/DOCKER.md](docs/DOCKER.md) for complete Docker documentation.
+
+### Local Development (Without Docker)
 
 1. **Clone the repository**
    ```bash
@@ -105,26 +166,38 @@ whatsapp-chatbot/
    .venv\Scripts\activate     # Windows
    ```
 
-### Docker Setup
-
-1. **Build and run with Docker Compose**
+5. **Start Redis locally**
    ```bash
-   # Development environment
-   docker-compose up --build
-   
-   # Production environment
-   ENV_FILE=.env.production docker-compose up --build
+   redis-server
    ```
 
 ## ⚙️ Configuration
 
 ### Environment Variables
 
-Copy the example environment file and configure:
+The application supports multiple environments with Docker-specific configurations:
 
 ```bash
+# For Docker development environment (hot reload, detached)
+cp .env.example .env.docker.dev
+
+# For Docker production environment (optimized, detached)
+cp .env.example .env.docker.prod
+
+# For local development (non-Docker)
 cp .env.example .env.development
+
+# For local production (non-Docker)
+cp .env.example .env.production
 ```
+
+**Environment file usage:**
+- `.env.docker.dev` - Used by `docker-compose.dev.yml` for development (hot reload, detached mode)
+- `.env.docker.prod` - Used by `docker-compose.prod.yml` for production (optimized, detached mode)
+- `.env.development` - Used for local development without Docker
+- `.env.production` - Used for local production without Docker
+
+> 📖 See [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) for detailed environment configuration guide, migration instructions, and troubleshooting.
 
 #### Required Configuration
 
@@ -162,9 +235,10 @@ SENTRY_ENABLED="true"
 
 ### Environment Files
 
-- `.env.development` - Local development
-- `.env.production` - Production deployment
-- `.env.docker` - Docker containerized environments
+- `.env.development` - Local development (non-Docker)
+- `.env.production` - Local production (non-Docker)
+- `.env.docker.dev` - Docker development (hot reload, detached mode)
+- `.env.docker.prod` - Docker production (optimized, detached mode)
 
 ## 📱 WhatsApp Integration
 
@@ -214,39 +288,65 @@ ngrok http 8000
 
 ## 🚀 Running the Application
 
-### Development Mode
+### Using Docker (Recommended)
+
+**Quick Start with Makefile:**
+```bash
+# View all available commands
+make help
+
+# Development environment (hot reload, detached mode)
+make dev-build
+
+# Production environment (detached mode)
+make prod-build
+
+# View logs (since containers run in background)
+make logs ENV=dev
+make logs-api ENV=prod
+make logs-worker ENV=prod
+
+# Scale workers
+make scale-workers WORKERS=5 ENV=prod
+```
+
+**Note:** All Docker commands run in **detached mode** - containers start in the background and your terminal prompt returns immediately. Use `make logs ENV=<env>` to view output.
+
+**Using Docker Compose directly:**
+```bash
+# Development (runs in detached mode)
+docker-compose -f docker-compose.dev.yml up -d --build
+
+# View logs
+docker-compose -f docker-compose.dev.yml logs -f
+
+# Production (detached mode)
+docker-compose -f docker-compose.prod.yml up -d --build
+
+# View logs
+docker-compose -f docker-compose.prod.yml logs -f
+```
+
+**Note:** Both dev and prod environments run in detached mode. Use `docker-compose logs -f` to follow logs.
+
+### Local Development (Without Docker)
 
 ```bash
-# Start Redis (if not using Docker)
+# Start Redis
 redis-server
 
-# Start the API server
-uv run uvicorn app.main:main --reload --host 0.0.0.0 --port 8000
+# Start the API server (uses uvloop for better performance)
+uv run python -m app.main
 
 # Start background workers (separate terminal)
 uv run arq app.workers.tasks.WorkerSettings
 ```
 
-### Docker Mode
+### VS Code Debugging
 
-```bash
-# Start all services
-docker-compose up
-
-# View logs
-docker-compose logs -f api
-docker-compose logs -f worker
-```
-
-### Production Mode
-
-```bash
-# Set environment
-export ENV_FILE=.env.production
-
-# Start with production settings
-docker-compose -f docker-compose.yml up -d
-```
+Use the provided launch configurations in `.vscode/launch.json`:
+- **FastAPI: Development** - Debug API with hot reload
+- **Arq Worker** - Debug background workers
 
 ## 📚 API Documentation
 
@@ -342,71 +442,97 @@ Each customer has a unique API key used in the webhook URL:
 
 ## 🚀 Deployment
 
-### Docker Deployment
+### Docker Deployment (Recommended)
 
-1. **Build Production Image**
-   ```bash
-   docker build -t whatsapp-chatbot .
-   ```
+The application uses separate Dockerfiles for API and workers:
+- **`Dockerfile`** - FastAPI API server with uvloop
+- **`Dockerfile.worker`** - ARQ background workers
 
-2. **Deploy with Docker Compose**
-   ```bash
-   ENV_FILE=.env.production docker-compose up -d
-   ```
+**Quick deployment:**
+```bash
+# Production deployment
+make prod-build
+
+# Or with docker-compose
+docker-compose -f docker-compose.prod.yml up -d --build
+
+# Scale workers for high load
+make scale-workers WORKERS=5 ENV=prod
+```
+
+**Production features:**
+- 2 worker replicas by default (configurable)
+- Resource limits (CPU/Memory)
+- Persistent Redis data volume
+- Automatic restart policies
+- No volume mounting (images are self-contained)
+- Job deduplication for exactly-once processing
+
+### Docker Images
+
+**Build separate images:**
+```bash
+# API image
+docker build -t whatsapp-chatbot-api -f Dockerfile .
+
+# Worker image
+docker build -t whatsapp-chatbot-worker -f Dockerfile.worker .
+```
 
 ### Cloud Deployment Options
 
-#### AWS ECS/Fargate
+#### Docker-based Platforms
+
+**AWS ECS/Fargate:**
 ```bash
 # Build and push to ECR
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin your-ecr-uri
-docker build -t whatsapp-chatbot .
-docker tag whatsapp-chatbot:latest your-ecr-uri/whatsapp-chatbot:latest
-docker push your-ecr-uri/whatsapp-chatbot:latest
+
+# Push API image
+docker build -t whatsapp-chatbot-api -f Dockerfile .
+docker tag whatsapp-chatbot-api:latest your-ecr-uri/whatsapp-chatbot-api:latest
+docker push your-ecr-uri/whatsapp-chatbot-api:latest
+
+# Push Worker image
+docker build -t whatsapp-chatbot-worker -f Dockerfile.worker .
+docker tag whatsapp-chatbot-worker:latest your-ecr-uri/whatsapp-chatbot-worker:latest
+docker push your-ecr-uri/whatsapp-chatbot-worker:latest
 ```
 
-#### Heroku
-```bash
-# Login to Heroku
-heroku login
+**DigitalOcean App Platform:**
+- Use `docker-compose.prod.yml` as reference
+- Deploy API and worker as separate services
+- Connect to managed Redis database
 
-# Create app
-heroku create your-app-name
-
-# Set environment variables
-heroku config:set WHATSAPP_ACCESS_TOKEN=your_token
-
-# Deploy
-git push heroku main
-```
-
-#### DigitalOcean App Platform
-Use the provided `docker-compose.yml` or create an app spec:
-
-```yaml
-name: whatsapp-chatbot
-services:
-- name: api
-  image:
-    registry_type: DOCKER_HUB
-    registry: your-username
-    repository: whatsapp-chatbot
-    tag: latest
-  http_port: 8000
-  environment_slug: node-js
-  instance_count: 1
-  instance_size_slug: basic-xxs
-```
+**Google Cloud Run:**
+- Deploy API container (scales to zero)
+- Use Cloud Tasks or Pub/Sub for workers
+- Connect to Redis via Memorystore
 
 ### Environment-Specific Configurations
 
 **Production Checklist:**
-- [ ] Use managed Redis (Upstash/AWS ElastiCache)
+- [ ] Update `.env.docker.prod` with production credentials
+- [ ] Use managed Redis (Upstash/AWS ElastiCache/Cloud Memorystore)
 - [ ] Configure HTTPS/SSL certificates
-- [ ] Set up monitoring and logging
-- [ ] Configure backup strategies
-- [ ] Set resource limits and scaling policies
-- [ ] Enable health checks
+- [ ] Set up monitoring and logging (Sentry configured)
+- [ ] Configure backup strategies for Redis
+- [ ] Set resource limits in `docker-compose.prod.yml`
+- [ ] Enable health checks and auto-restart
+- [ ] Test webhook URLs are publicly accessible
+- [ ] Scale workers based on expected message volume
+- [ ] Configure rate limiting and DDoS protection
+
+### Kubernetes Deployment
+
+See `docker-compose.prod.yml` for reference. Convert to Kubernetes manifests:
+```bash
+# Install kompose
+curl -L https://github.com/kubernetes/kompose/releases/download/v1.31.2/kompose-linux-amd64 -o kompose
+
+# Convert docker-compose to k8s
+kompose convert -f docker-compose.prod.yml
+```
 
 ## 🧪 Testing
 
@@ -466,7 +592,7 @@ tests/
 
 ### Redis/Queue Issues
 
-1. **Worker Not Processing Jobs**
+2. **Worker Not Processing Jobs**
    ```bash
    # Check Redis connection
    redis-cli ping
@@ -474,38 +600,80 @@ tests/
    # Monitor queue
    redis-cli monitor
    
-   # Check worker logs
-   docker-compose logs worker
+   # Check worker logs (Docker - runs in detached mode)
+   make logs-worker ENV=dev
+   docker-compose -f docker-compose.dev.yml logs -f worker
+   
+   # Check worker logs (local)
+   # View terminal where arq is running
    ```
 
-2. **Memory Issues**
-   - Configure Redis memory limits
-   - Implement job cleanup policies
-   - Monitor queue size
+2. **Duplicate Job Processing**
+   - Job deduplication is enabled by default
+   - Jobs are tracked in Redis with 1-hour TTL
+   - Multiple workers are safe with deduplication
 
-### Development Issues
+3. **Memory Issues**
+   - Configure Redis memory limits in `redis.conf`
+   - Monitor queue size: `redis-cli info memory`
+   - Adjust worker resource limits in `docker-compose.prod.yml`
+
+### Docker Issues
 
 1. **Environment Variables**
-   - Always use `.env.development` for local development
-   - Never commit sensitive tokens to git
-   - Use different tokens for dev/staging/production
+   - Use correct env file for each environment:
+     - `.env.development` for local dev
+     - `.env.docker.dev` for Docker dev
+     - `.env.docker.prod` for Docker production
+     - `.env.production` for local production
+   - Never commit `.env.*` files to git
 
-2. **Database Connections**
-   - Ensure Supabase project is active
-   - Check connection strings and credentials
-   - Monitor connection pool usage
-
-3. **Docker Issues**
+2. **Build Issues**
    ```bash
    # Clean Docker cache
    docker system prune -a
    
    # Rebuild without cache
-   docker-compose build --no-cache
+   make dev-build
+   docker-compose -f docker-compose.dev.yml build --no-cache
    
-   # Check container logs
-   docker-compose logs api
+   # Check container logs (runs in detached mode)
+   make logs ENV=dev
+   docker-compose -f docker-compose.dev.yml logs -f
    ```
+
+3. **Worker Not Starting**
+   ```bash
+   # Verify worker is running ARQ (not API)
+   docker-compose -f docker-compose.dev.yml logs worker
+   
+   # Should see: "Starting worker for 3 functions..."
+   # NOT: "Uvicorn running on..."
+   
+   # Rebuild worker if needed
+   docker-compose -f docker-compose.dev.yml build worker
+   ```
+
+4. **Port Conflicts**
+   ```bash
+   # Check what's using port 8000
+   lsof -i :8000
+   
+   # Stop conflicting services or change port in docker-compose
+   ```
+
+### Development Issues
+
+1. **Database Connections**
+   - Ensure Supabase project is active
+   - Check connection strings and credentials
+   - Monitor connection pool usage
+
+2. **Hot Reload Not Working**
+   - Ensure using development compose file: `make dev-build`
+   - Check volume mounting in `docker-compose.dev.yml`
+   - View logs to see if changes are detected: `make logs ENV=dev`
+   - Restart containers if needed: `make dev-down && make dev-build`
 
 ## 🔧 Message Type Configuration
 
@@ -553,20 +721,45 @@ processor = WhatsAppMessageProcessor({
 
 ### Development Setup
 
-1. **Install development dependencies**
+1. **Clone and setup**
    ```bash
+   git clone <repository-url>
+   cd whatsapp-chatbot
    uv sync --dev
    ```
 
-2. **Run linting and formatting**
+2. **Start development environment**
    ```bash
+   # Using Docker (recommended) - runs in detached mode
+   make dev-build
+   
+   # View logs
+   make logs ENV=dev
+   
+   # Or locally
+   redis-server  # Terminal 1
+   uv run python -m app.main  # Terminal 2
+   uv run arq app.workers.tasks.WorkerSettings  # Terminal 3
+   ```
+
+3. **Run linting and formatting**
+   ```bash
+   make lint
+   # or
    uvx ruff check . --fix
    uvx ruff format .
    ```
 
-3. **Run tests before committing**
+4. **Run tests before committing**
    ```bash
+   make test
+   # or
    uv run pytest
+   ```
+
+5. **View Docker logs (since containers run in background)**
+   ```bash
+   make logs ENV=dev
    ```
 
 ### Code Standards
@@ -576,16 +769,97 @@ processor = WhatsAppMessageProcessor({
 - Write comprehensive tests for new features
 - Update documentation for API changes
 - Use conventional commit messages
+- Test with Docker before submitting PR
 
 ### Pull Request Process
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes with tests
-4. Run linting and tests
-5. Submit a pull request with description
+4. Run linting and tests: `make lint && make test`
+5. Test with Docker: `make docker-build`
+6. Submit a pull request with description
 
-## 📄 License
+### Docker Development Tips
+
+- Use `make dev-build` for hot-reload development (runs in detached mode)
+- View logs: `make logs ENV=dev`
+- Check logs after starting: `make logs-api ENV=dev` or `make logs-worker ENV=dev`
+- Rebuild after dependency changes: `make dev-down && make dev-build`
+- Test workers separately: `docker-compose -f docker-compose.dev.yml logs -f worker`
+
+## 📊 Quick Reference
+
+### Environment Files Quick Guide
+
+```bash
+# Which file should I use?
+Local dev (no Docker)    → .env.development
+Local production         → .env.production
+Docker development       → .env.docker.dev (detached mode)
+Docker production        → .env.docker.prod (detached mode)
+```
+
+See [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) for complete environment configuration guide.
+
+### Docker Commands Cheat Sheet
+
+| Task | Command |
+|------|---------|
+| Start development (detached) | `make dev-build` |
+| Start production (detached) | `make prod-build` |
+| View dev logs | `make logs ENV=dev` |
+| View prod logs | `make logs ENV=prod` |
+| Scale workers | `make scale-workers WORKERS=5 ENV=prod` |
+| Stop services | `make dev-down` / `make prod-down` |
+| Clean everything | `make clean` |
+| Run tests | `make test` |
+| Format code | `make lint` |
+
+**Note:** All Docker commands run in detached mode. Use `make logs` to view output.
+
+### Environment Files
+
+| File | Purpose | Usage |
+|------|---------|-------|
+| `.env.development` | Local dev (non-Docker) | Hot reload, local services |
+| `.env.production` | Local production (non-Docker) | Production without Docker |
+| `.env.docker.dev` | Docker development | Hot reload in containers (detached) |
+| `.env.docker.prod` | Docker production | Production deployment (detached) |
+
+### Service URLs
+
+| Service | Development | Docker | Production |
+|---------|------------|--------|------------|
+| API | localhost:8000 | localhost:8000 | your-domain.com |
+| Docs | localhost:8000/docs | localhost:8000/docs | your-domain.com/docs |
+| Redis Commander | localhost:8081 | localhost:8081 | N/A |
+| Redis | localhost:6379 | redis:6379 | managed service |
+
+### Key Files
+
+| File | Description |
+|------|-------------|
+| `Dockerfile` | API container definition |
+| `Dockerfile.worker` | Worker container definition |
+| `docker-compose.dev.yml` | Development environment (detached) |
+| `docker-compose.prod.yml` | Production environment (detached) |
+| `Makefile` | Quick commands |
+| `.env.docker.dev` | Docker dev configuration |
+| `.env.docker.prod` | Docker prod configuration |
+
+### Documentation
+
+| File | Description |
+|------|-------------|
+| [README.md](README.md) | Project overview and getting started |
+| [docs/RUNBOOK.md](docs/RUNBOOK.md) | Operational guide and workflows |
+| [docs/DOCKER.md](docs/DOCKER.md) | Complete Docker deployment guide |
+| [docs/DOCKER-QUICKSTART.md](docs/DOCKER-QUICKSTART.md) | Quick Docker reference |
+| [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) | Environment variables guide |
+| [docs/AGENTS.md](docs/AGENTS.md) | Agent configuration and architecture |
+
+## �📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 

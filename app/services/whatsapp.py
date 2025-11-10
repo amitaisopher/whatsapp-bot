@@ -297,11 +297,11 @@ class WhatsAppService:
                 #     content=whatsapp_incoming_message.text,
                 # )
                 job_id: Job | None = await queue_service.enqueue(
-                    'handle_incoming_whatsapp_message',
+                    "handle_incoming_whatsapp_message",
                     customer_id=customer_id,
                     from_number=whatsapp_incoming_message.from_,
                     user_message=whatsapp_incoming_message.text,
-                    message_id=whatsapp_incoming_message.id  # Pass message ID for deduplication
+                    message_id=whatsapp_incoming_message.id,  # Pass message ID for deduplication
                 )
                 if job_id:
                     self.logger.info(

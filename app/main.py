@@ -6,6 +6,7 @@ def main():
     import uvloop
     import uvicorn
     import asyncio
+
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
     uvicorn.run(app, host="0.0.0.0", port=8000)

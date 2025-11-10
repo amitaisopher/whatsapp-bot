@@ -415,7 +415,7 @@ Use `.env.template` as reference for required variables.
 
 ## Additional Resources
 
-- [README.md](README.md) - Project overview and architecture
+- [README.md](../README.md) - Project overview and architecture
 - [DOCKER.md](DOCKER.md) - Detailed Docker deployment guide
 - [DOCKER-QUICKSTART.md](DOCKER-QUICKSTART.md) - Quick Docker reference
 - [ENVIRONMENT.md](ENVIRONMENT.md) - Environment variables guide

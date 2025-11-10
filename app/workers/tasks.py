@@ -41,7 +41,8 @@ async def mark_job_as_processed(ctx, job_key: str, ttl: int = 3600) -> None:
         except (AuthenticationError, ConnectionError) as e:
             logger = ctx.get("logger") or get_application_logger()
             logger.error(
-                f"Redis error raised during attempt to update job {job_key}: {e}")
+                f"Redis error raised during attempt to update job {job_key}: {e}"
+            )
 
 
 async def download_content(ctx, url: str) -> str:
@@ -94,8 +95,7 @@ async def handle_incoming_whatsapp_message(
             get_inventory_search_service(customer_id, session)
         )
 
-        logger.info(
-            f"Processing WhatsApp message {job_key} from {from_number}")
+        logger.info(f"Processing WhatsApp message {job_key} from {from_number}")
 
         # Process the message
         response = await inventory_search_service.process_message(
@@ -103,8 +103,7 @@ async def handle_incoming_whatsapp_message(
         )
 
         if response:
-            message_to_send: str = response.get(
-                "response", "No response available")
+            message_to_send: str = response.get("response", "No response available")
 
             # Send the response
             send_result = await whatsapp_service.send_message(
@@ -118,8 +117,7 @@ async def handle_incoming_whatsapp_message(
             ):  # Adjust this condition based on your send_message return format
                 # Mark as processed only on successful send
                 await mark_job_as_processed(ctx, job_key)
-                logger.info(
-                    f"Successfully processed WhatsApp message {job_key}")
+                logger.info(f"Successfully processed WhatsApp message {job_key}")
 
                 return {
                     "status": "success",
@@ -164,12 +162,10 @@ async def send_whatsapp_message(
 
         if result:  # Adjust this condition based on your send_message return format
             await mark_job_as_processed(ctx, job_key)
-            logger.info(
-                f"Successfully sent WhatsApp message {job_key} to {to}")
+            logger.info(f"Successfully sent WhatsApp message {job_key} to {to}")
             return f"Sent WhatsApp message to {to}"
         else:
-            logger.error(
-                f"Failed to send WhatsApp message {job_key}: {result}")
+            logger.error(f"Failed to send WhatsApp message {job_key}: {result}")
             raise Exception(f"Failed to send message: {result}")
 
     except Exception as e:

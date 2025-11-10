@@ -9,6 +9,7 @@ REDIS_SETTINGS: RedisSettings = RedisSettings(
     ssl=False if settings.environment == Environment.DEVELOPMENT else True,
 )
 
+
 def get_redis_url() -> str | None:
     """Construct the Upstash Redis URL if host and password are provided."""
     if settings.environment != Environment.DEVELOPMENT:
