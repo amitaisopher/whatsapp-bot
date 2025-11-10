@@ -28,10 +28,10 @@ class Settings(BaseSettings):
     upstash_redis_rest_token: str | None = Field(
         default=None, alias="UPSTASH_REDIS_REST_TOKEN"
     )
-    upstash_redis_host: str = Field(default="localhost", alias="UPSTASH_REDIS_HOST")
-    upstash_redis_port: int = Field(default=6379, alias="UPSTASH_REDIS_PORT")
+    upstash_redis_host: str = Field(default="localhost", alias="REDIS_HOST")
+    upstash_redis_port: int = Field(default=6379, alias="REDIS_PORT")
     upstash_redis_password: str | None = Field(
-        default=None, alias="UPSTASH_REDIS_PASSWORD"
+        default=None, alias="REDIS_PASSWORD"
     )
 
     # WhatsApp config

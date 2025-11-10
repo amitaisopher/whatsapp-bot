@@ -212,9 +212,9 @@ WHATSAPP_APP_SECRET="your_app_secret"
 **Redis Configuration:**
 ```bash
 # Local Redis
-UPSTASH_REDIS_HOST="localhost"
-UPSTASH_REDIS_PORT="6379"
-UPSTASH_REDIS_PASSWORD="your-password"
+REDIS_HOST="localhost"
+REDIS_PORT="6379"
+REDIS_PASSWORD="your-password"
 
 # Or Upstash Redis (production)
 UPSTASH_REDIS_REST_URL="your_upstash_url"

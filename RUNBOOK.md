@@ -113,8 +113,8 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ### 3. Configure Environment File
 Create `.env.development` with localhost settings:
 ```env
-UPSTASH_REDIS_HOST=localhost
-UPSTASH_REDIS_PORT=6379
+REDIS_HOST=localhost
+REDIS_PORT=6379
 # ... other settings
 ```
 

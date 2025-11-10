@@ -28,8 +28,8 @@ This project uses different environment files for different deployment scenarios
 **Example:**
 ```bash
 # Uses local services
-UPSTASH_REDIS_HOST="localhost"
-UPSTASH_REDIS_PORT="6379"
+REDIS_HOST="localhost"
+REDIS_PORT="6379"
 SEARCH_API_URL="http://localhost:8005"
 ```
 
@@ -47,8 +47,8 @@ SEARCH_API_URL="http://localhost:8005"
 **Example:**
 ```bash
 # Uses Docker service names
-UPSTASH_REDIS_HOST="redis"
-UPSTASH_REDIS_PORT="6379"
+REDIS_HOST="redis"
+REDIS_PORT="6379"
 SEARCH_API_URL="http://host.docker.internal:8005"
 ```
 
@@ -66,8 +66,8 @@ SEARCH_API_URL="http://host.docker.internal:8005"
 **Example:**
 ```bash
 # Uses Docker service names
-UPSTASH_REDIS_HOST="redis"
-UPSTASH_REDIS_PORT="6379"
+REDIS_HOST="redis"
+REDIS_PORT="6379"
 SEARCH_API_URL="http://host.docker.internal:8005"
 ```
 
@@ -86,8 +86,8 @@ SEARCH_API_URL="http://host.docker.internal:8005"
 **Example:**
 ```bash
 # Uses production services
-UPSTASH_REDIS_HOST="production-redis.example.com"
-UPSTASH_REDIS_PORT="6379"
+REDIS_HOST="production-redis.example.com"
+REDIS_PORT="6379"
 SEARCH_API_URL="https://api.production.example.com"
 ```
 
@@ -118,7 +118,7 @@ SEARCH_API_URL="https://api.production.example.com"
 
 | Variable | Local Dev | Docker Dev | Docker Prod |
 |----------|-----------|------------|-------------|
-| `UPSTASH_REDIS_HOST` | `localhost` | `redis` | `prod-redis.example.com` |
+| `REDIS_HOST` | `localhost` | `redis` | `prod-redis.example.com` |
 | `SEARCH_API_URL` | `http://localhost:8005` | `http://host.docker.internal:8005` | `https://api.prod.com` |
 | `WHATSAPP_ACCESS_TOKEN` | Test token | Test token | Production token |
 | `SENTRY_DSN` | Empty/test | Empty/test | Production DSN |
@@ -131,9 +131,9 @@ All environment files should include:
 
 ```bash
 # Redis Configuration
-UPSTASH_REDIS_HOST=
-UPSTASH_REDIS_PORT=
-UPSTASH_REDIS_PASSWORD=
+REDIS_HOST=
+REDIS_PORT=
+REDIS_PASSWORD=
 
 # WhatsApp Configuration
 WHATSAPP_ACCESS_TOKEN=
@@ -196,7 +196,7 @@ redis-cli ping
 # Check Redis service
 docker-compose -f docker-compose.docker.yml logs redis
 
-# Verify UPSTASH_REDIS_HOST is set to "redis"
+# Verify REDIS_HOST is set to "redis"
 ```
 
 ### Issue: "Search API timeout"
@@ -248,7 +248,7 @@ If you're migrating from the old environment file structure:
    ```bash
    # For Docker development (from old .env.development)
    cp .env.development .env.docker.dev
-   # Edit UPSTASH_REDIS_HOST to "redis" instead of "localhost"
+   # Edit REDIS_HOST to "redis" instead of "localhost"
    
    # For Docker production (from old .env.production)
    cp .env.production .env.docker.prod
@@ -257,8 +257,8 @@ If you're migrating from the old environment file structure:
 3. **Update Redis host in Docker files:**
    ```bash
    # In .env.docker.dev and .env.docker
-   sed -i 's/UPSTASH_REDIS_HOST="localhost"/UPSTASH_REDIS_HOST="redis"/' .env.docker.dev
-   sed -i 's/UPSTASH_REDIS_HOST="localhost"/UPSTASH_REDIS_HOST="redis"/' .env.docker
+   sed -i 's/REDIS_HOST="localhost"/REDIS_HOST="redis"/' .env.docker.dev
+   sed -i 's/REDIS_HOST="localhost"/REDIS_HOST="redis"/' .env.docker
    ```
 
 4. **Test each environment:**
