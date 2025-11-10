@@ -12,6 +12,7 @@ dependencies = [
     "python-whatsapp>=0.0.1",
     "sentry-sdk>=2.39.0",
     "supabase>=2.22.0",
+    "uvloop>=0.21.0",
     "whatsapp-python>=4.3.0",
 ]
 

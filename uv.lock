@@ -1631,6 +1631,7 @@ dependencies = [
     { name = "python-whatsapp" },
     { name = "sentry-sdk" },
     { name = "supabase" },
+    { name = "uvloop" },
     { name = "whatsapp-python" },
 ]
 
@@ -1650,6 +1651,7 @@ requires-dist = [
     { name = "python-whatsapp", specifier = ">=0.0.1" },
     { name = "sentry-sdk", specifier = ">=2.39.0" },
     { name = "supabase", specifier = ">=2.22.0" },
+    { name = "uvloop", specifier = ">=0.21.0" },
     { name = "whatsapp-python", specifier = ">=4.3.0" },
 ]
 
