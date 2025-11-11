@@ -86,7 +86,7 @@
       "cwd": "${workspaceFolder}",
       "env": {
         "PYTHONPATH": "${workspaceFolder}",
-        "ENVIRONMENT": "production"
+        "ENVIRONMENT": "development"
       },
       "justMyCode": true
     }

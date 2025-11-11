@@ -92,6 +92,7 @@ The application uses a multi-container architecture:
    - Message queue (ARQ)
    - Job deduplication cache
    - Session storage
+   - Native TCP/TLS connections (development uses `redis://`, production uses `rediss://`)
 
 4. **Redis Commander** (dev/docker only)
    - Web UI for Redis inspection
@@ -211,15 +212,18 @@ WHATSAPP_APP_SECRET="your_app_secret"
 
 **Redis Configuration:**
 ```bash
-# Local Redis
+# Development (local Redis)
 REDIS_HOST="localhost"
 REDIS_PORT="6379"
 REDIS_PASSWORD="your-password"
 
-# Or Upstash Redis (production)
-UPSTASH_REDIS_REST_URL="your_upstash_url"
-UPSTASH_REDIS_REST_TOKEN="your_upstash_token"
+# Production (Upstash Redis with TLS)
+REDIS_HOST="your-redis-host.upstash.io"
+REDIS_PORT="6379"
+REDIS_PASSWORD="your-upstash-password"
 ```
+
+**Note:** The application automatically uses secure TLS connections (`rediss://`) in production mode and regular TCP (`redis://`) in development mode.
 
 **Database Configuration:**
 ```bash
@@ -513,7 +517,8 @@ docker push your-ecr-uri/whatsapp-chatbot-worker:latest
 
 **Production Checklist:**
 - [ ] Update `.env.docker.prod` with production credentials
-- [ ] Use managed Redis (Upstash/AWS ElastiCache/Cloud Memorystore)
+- [ ] Use managed Redis with TLS support (Upstash/AWS ElastiCache/Cloud Memorystore)
+- [ ] Ensure `REDIS_HOST`, `REDIS_PORT`, and `REDIS_PASSWORD` are set (app automatically uses TLS in production)
 - [ ] Configure HTTPS/SSL certificates
 - [ ] Set up monitoring and logging (Sentry configured)
 - [ ] Configure backup strategies for Redis
@@ -522,6 +527,13 @@ docker push your-ecr-uri/whatsapp-chatbot-worker:latest
 - [ ] Test webhook URLs are publicly accessible
 - [ ] Scale workers based on expected message volume
 - [ ] Configure rate limiting and DDoS protection
+
+**Note on Redis Connection:**
+The application automatically selects the appropriate connection protocol:
+- **Development:** `redis://` (unencrypted TCP)
+- **Production:** `rediss://` (TLS-encrypted TCP)
+
+No additional configuration needed - just set `REDIS_HOST`, `REDIS_PORT`, and `REDIS_PASSWORD`.
 
 ### Kubernetes Deployment
 

@@ -11,7 +11,6 @@ from app.services.inventory_search import (
 )
 from app.core.logging import get_application_logger
 from app.core.config import get_settings
-from app.core.redis import get_redis_url
 from redis.exceptions import AuthenticationError, ConnectionError
 
 settings = get_settings()
@@ -182,8 +181,10 @@ async def startup(ctx):
     # Add Redis connection for job deduplication
     import redis.asyncio as redis
 
+    logger.info(f"Connecting to Redis host: {settings.redis_host} ")
+
     ctx["redis"] = redis.from_url(
-        url=get_redis_url(),
+        url=settings.redis_url,
         decode_responses=True,
     )
 

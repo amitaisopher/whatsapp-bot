@@ -1,8 +1,9 @@
 import os
 from enum import StrEnum
 from functools import lru_cache
+from typing import Any
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -22,17 +23,26 @@ class Settings(BaseSettings):
 
     app_name: str = Field(default="WhatsApp Chatbot", alias="APP_NAME")
     environment: Environment = Field(default=Environment.DEVELOPMENT)
-    upstash_redis_rest_url: str | None = Field(
-        default=None, alias="UPSTASH_REDIS_REST_URL"
-    )
-    upstash_redis_rest_token: str | None = Field(
-        default=None, alias="UPSTASH_REDIS_REST_TOKEN"
-    )
-    upstash_redis_host: str = Field(default="localhost", alias="REDIS_HOST")
-    upstash_redis_port: int = Field(default=6379, alias="REDIS_PORT")
-    upstash_redis_password: str | None = Field(
-        default=None, alias="REDIS_PASSWORD"
-    )
+   
+    # Redis config
+    redis_host: str = Field(default="localhost", alias="REDIS_HOST")
+    redis_port: int = Field(default=6379, alias="REDIS_PORT")
+    redis_password: str | None = Field(default=None, alias="REDIS_PASSWORD")
+
+    @field_validator("redis_port", mode="before")
+    @classmethod
+    def validate_redis_port(cls, v: Any) -> int:
+        """Validate and convert REDIS_PORT to integer, handling empty strings."""
+        if v == "" or v is None:
+            return 6379  # Return default value
+        if isinstance(v, int):
+            return v
+        if isinstance(v, str):
+            try:
+                return int(v)
+            except ValueError:
+                return 6379  # Return default value if conversion fails
+        return 6379
 
     # WhatsApp config
     whatsapp_access_token: str | None = Field(
@@ -64,18 +74,21 @@ class Settings(BaseSettings):
     supabase_url: str | None = Field(default=None, alias="SUPABASE_URL")
     supabase_key: str | None = Field(default=None, alias="SUPABASE_KEY")
 
-    # Search API config
+    # Inventory Search API config
     search_api_url: str | None = Field(default=None, alias="SEARCH_API_URL")
 
     # Inventory Search timeout
     inventory_search_timeout: int = Field(default=40, alias="INVENTORY_SEARCH_TIMEOUT")
 
     @property
-    def upstash_redis_url(self) -> str | None:
-        """Construct the Upstash Redis URL if host and password are provided."""
-        if self.upstash_redis_host and self.upstash_redis_password:
-            return f"rediss://default:{self.upstash_redis_password}@{self.upstash_redis_host}:{self.upstash_redis_port}"
-        return None
+    def redis_url(self) -> str:
+        """Construct the Redis URL if host and password are provided. For production use rediss."""
+        if not self.redis_host or not self.redis_password:
+            raise ValueError("Redis host or password is not configured")
+        if self.environment == Environment.DEVELOPMENT:
+            return f"redis://default:{self.redis_password}@{self.redis_host}:{self.redis_port}"
+        else:
+            return f"rediss://default:{self.redis_password}@{self.redis_host}:{self.redis_port}"
 
     model_config = SettingsConfigDict(env_file_encoding="utf-8", extra="allow")
 
