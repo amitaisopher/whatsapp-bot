@@ -75,7 +75,7 @@
       "justMyCode": true
     },
     {
-      "name": "Arq Worker",
+      "name": "Arq Worker - Development",
       "type": "debugpy",
       "request": "launch",
       "module": "arq",
@@ -87,6 +87,22 @@
       "env": {
         "PYTHONPATH": "${workspaceFolder}",
         "ENVIRONMENT": "development"
+      },
+      "justMyCode": true
+    },
+    {
+      "name": "Arq Worker - Production",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "arq",
+      "args": [
+        "app.workers.tasks.WorkerSettings"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "ENVIRONMENT": "production"
       },
       "justMyCode": true
     }
