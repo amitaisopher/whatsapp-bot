@@ -8,6 +8,8 @@ A production-ready WhatsApp chatbot built with FastAPI, Redis, and the WhatsApp 
 - **Async Message Processing**: Background job processing with Redis queues using ARQ
 - **Type-Safe Message Handling**: Enum-based message type system for better maintainability
 - **Multi-Customer Support**: Isolated customer environments with API key authentication
+- **Car Media Management**: Store and manage images, videos, and documents for cars
+- **Media Management CLI**: Command-line tool for managing customers, cars, and media
 - **Comprehensive Logging**: Structured logging with Sentry integration
 - **Production Ready**: Docker support, environment-based configuration, and error handling
 - **Dependency Injection**: Testable architecture with proper separation of concerns
@@ -802,6 +804,23 @@ processor = WhatsAppMessageProcessor({
 
 ## 📊 Quick Reference
 
+### Media Management CLI
+
+The project includes a powerful CLI tool for managing customers, cars, and media:
+
+```bash
+# Quick usage
+./media list-customers
+./media list-cars -c "CUSTOMER-UUID"
+./media list-media -c "CUSTOMER-UUID" -i CAR-ID
+./media upsert-media -c "CUSTOMER-UUID" -i CAR-ID -u "https://cdn.com/car.jpg" --primary
+
+# Interactive mode
+./media upsert-media -c "CUSTOMER-UUID" -i CAR-ID --interactive
+```
+
+See [docs/MEDIA_CLI.md](docs/MEDIA_CLI.md) for complete CLI documentation and [docs/CAR_MEDIA.md](docs/CAR_MEDIA.md) for car media system details.
+
 ### Environment Files Quick Guide
 
 ```bash
@@ -870,6 +889,8 @@ See [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) for complete environment configur
 | [docs/DOCKER-QUICKSTART.md](docs/DOCKER-QUICKSTART.md) | Quick Docker reference |
 | [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) | Environment variables guide |
 | [docs/AGENTS.md](docs/AGENTS.md) | Agent configuration and architecture |
+| [docs/CAR_MEDIA.md](docs/CAR_MEDIA.md) | Car media system documentation |
+| [docs/MEDIA_CLI.md](docs/MEDIA_CLI.md) | Media management CLI tool guide |
 
 ## �📄 License
 

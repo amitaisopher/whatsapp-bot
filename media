@@ -1,0 +1,14 @@
+#!/bin/bash
+# Wrapper script for manage_media.py that uses the virtual environment
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VENV_PYTHON="$SCRIPT_DIR/.venv/bin/python"
+
+if [ ! -f "$VENV_PYTHON" ]; then
+    echo "Error: Virtual environment not found at $VENV_PYTHON"
+    echo "Please run: uv venv .venv && uv pip install -r requirements.txt"
+    exit 1
+fi
+
+# Pass all arguments to the Python script
+exec "$VENV_PYTHON" "$SCRIPT_DIR/manage_media.py" "$@"

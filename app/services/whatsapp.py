@@ -199,6 +199,53 @@ class WhatsAppService:
             )
             return {"success": False, "error": f"Exception: {str(e)}", "response": None}
 
+    async def send_image(self, to: str, image_url: str, caption: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Send an image message via WhatsApp.
+
+        Args:
+            to: Phone number to send the image to
+            image_url: URL of the image to send
+            caption: Optional caption for the image
+
+        Returns:
+            Dict containing success status and response data
+        """
+        try:
+            # Use the WhatsApp client's send_image method directly
+            # Note: This method is synchronous in the whatsapp library
+            response = self.whatsapp_client.send_image(
+                image=image_url,
+                recipient_id=to,
+                caption=caption or "",  # Caption cannot be None
+                link=True  # Indicate we're using a URL, not media ID
+            )
+
+            # Check if the response indicates success
+            if self._is_successful_response(response):
+                self.logger.info(f"Successfully sent WhatsApp image to {to}")
+                return {
+                    "success": True,
+                    "message_id": response.get("messages", [{}])[0].get("id"),
+                    "response": response,
+                }
+            else:
+                # Handle API errors
+                error_info = self._extract_error_info(response)
+                self.logger.error(
+                    f"WhatsApp API error when sending image to {to}: {error_info}"
+                )
+                return {"success": False, "error": error_info, "response": response}
+
+        except asyncio.TimeoutError:
+            self.logger.error(f"Timeout while sending WhatsApp image to {to}")
+            return {"success": False, "error": "Request timeout", "response": None}
+        except Exception as e:
+            self.logger.exception(
+                f"Exception occurred while sending WhatsApp image to {to}: {e}"
+            )
+            return {"success": False, "error": f"Exception: {str(e)}", "response": None}
+
     def _is_successful_response(self, response: Dict[str, Any]) -> bool:
         """
         Check if the WhatsApp API response indicates success.
