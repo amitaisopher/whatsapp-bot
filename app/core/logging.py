@@ -7,6 +7,16 @@ from app.core.config import settings
 import sentry_sdk
 from sentry_sdk.integrations.logging import LoggingIntegration
 from sentry_sdk.integrations.fastapi import FastApiIntegration
+from enum import StrEnum
+
+
+class LogLevels(StrEnum):
+    """Enum for log levels."""
+    DEBUG = "DEBUG"
+    INFO = "INFO"
+    WARNING = "WARNING"
+    ERROR = "ERROR"
+    CRITICAL = "CRITICAL"
 
 
 def verify_sentry_configuration() -> bool:
@@ -67,6 +77,20 @@ def setup_logging():
     Set up logging for use throughout the application.
     """
     logger.remove()
+    # Set log level from settings
+    log_level = settings.log_level.upper()
+    if log_level not in LogLevels.__members__:
+        log_level = LogLevels.INFO.value
+    # Optionally log to file
+    if settings.log_to_file:
+        logger.add(
+            settings.log_file_path,
+            level=log_level,
+            rotation="10 MB",  # Rotate after 10 MB
+            retention="10 days",  # Keep logs for 10 days
+            compression="zip",  # Compress rotated logs
+        )
+    
     logger.add(
         sys.stdout,
         level="INFO",

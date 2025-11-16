@@ -80,6 +80,11 @@ class Settings(BaseSettings):
     # Inventory Search timeout
     inventory_search_timeout: int = Field(default=40, alias="INVENTORY_SEARCH_TIMEOUT")
 
+    # Logging configuration
+    log_level: str = Field(default="INFO", alias="LOG_LEVEL")
+    log_to_file: bool = Field(default=False, alias="LOG_TO_FILE")
+    log_file_path: str = Field(default="./logs/app.log", alias="LOG_FILE_PATH")
+
     @property
     def redis_url(self) -> str:
         """Construct the Redis URL if host and password are provided. For production use rediss."""
