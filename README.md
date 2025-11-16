@@ -689,6 +689,36 @@ tests/
    - View logs to see if changes are detected: `make logs ENV=dev`
    - Restart containers if needed: `make dev-down && make dev-build`
 
+### Worker Job Failures
+
+**Problem**: Jobs fail and aren't being retried  
+**Solution**: The system automatically retries failed jobs with exponential backoff
+
+```bash
+# View worker logs
+make logs-worker ENV=dev
+
+# Check failed jobs in dead letter queue
+python -m app.workers.dlq_manager stats
+
+# List all failed jobs
+python -m app.workers.dlq_manager list
+
+# View specific job details
+python -m app.workers.dlq_manager get <job_key>
+
+# Clear DLQ after fixing issues
+python -m app.workers.dlq_manager clear
+```
+
+**Features**:
+- Automatic retries with exponential backoff (30s, 60s, 120s)
+- Comprehensive logging of all failures
+- Dead letter queue for manual review
+- Job deduplication to prevent duplicate processing
+
+See [docs/WORKER_ERROR_HANDLING.md](docs/WORKER_ERROR_HANDLING.md) for complete error handling documentation.
+
 ## 🔧 Message Type Configuration
 
 ### Available Message Types
@@ -891,6 +921,7 @@ See [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) for complete environment configur
 | [docs/AGENTS.md](docs/AGENTS.md) | Agent configuration and architecture |
 | [docs/CAR_MEDIA.md](docs/CAR_MEDIA.md) | Car media system documentation |
 | [docs/MEDIA_CLI.md](docs/MEDIA_CLI.md) | Media management CLI tool guide |
+| [docs/WORKER_ERROR_HANDLING.md](docs/WORKER_ERROR_HANDLING.md) | Worker error handling and DLQ guide |
 
 ## �📄 License
 

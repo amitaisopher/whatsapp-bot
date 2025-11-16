@@ -2,12 +2,15 @@
 
 import pytest
 from unittest.mock import AsyncMock, Mock, patch
-from app.workers.tasks import (
+from arq import Retry
+from app.workers.task_functions import (
     handle_incoming_whatsapp_message,
     send_whatsapp_message,
+    download_content,
+)
+from app.workers.job_deduplication import (
     is_job_already_processed,
     mark_job_as_processed,
-    download_content,
 )
 
 
@@ -99,10 +102,10 @@ class TestTaskDeduplication:
 
         # Mock inventory search service
         with patch(
-            "app.workers.tasks.get_inventory_search_service"
+            "app.workers.task_functions.get_inventory_search_service"
         ) as mock_get_service:
             mock_service = AsyncMock()
-            mock_service.process_message.return_value = {"response": "Test response"}
+            mock_service.process_message.return_value = {"reply": "Test response"}
             mock_get_service.return_value = mock_service
 
             # Mock WhatsApp service response
@@ -125,7 +128,7 @@ class TestTaskDeduplication:
 
         # Mock inventory search service to return None
         with patch(
-            "app.workers.tasks.get_inventory_search_service"
+            "app.workers.task_functions.get_inventory_search_service"
         ) as mock_get_service:
             mock_service = AsyncMock()
             mock_service.process_message.return_value = None
@@ -148,21 +151,23 @@ class TestTaskDeduplication:
 
         # Mock inventory search service
         with patch(
-            "app.workers.tasks.get_inventory_search_service"
+            "app.workers.task_functions.get_inventory_search_service"
         ) as mock_get_service:
             mock_service = AsyncMock()
-            mock_service.process_message.return_value = {"response": "Test response"}
+            mock_service.process_message.return_value = {"reply": "Test response"}
             mock_get_service.return_value = mock_service
 
             # Mock WhatsApp service response to fail
             mock_ctx["whatsapp_service"].send_message.return_value = None
 
-            with pytest.raises(Exception, match="Failed to send message"):
+            # Should raise Retry exception on first attempt
+            with pytest.raises(Retry):
                 await handle_incoming_whatsapp_message(
                     mock_ctx, "customer123", "+1234567890", "Hello", "msg123"
                 )
 
             # Should NOT mark as processed on failure
+            mock_ctx["redis"].setex.assert_not_called()
             mock_ctx["redis"].setex.assert_not_called()
 
     @pytest.mark.asyncio
@@ -202,7 +207,8 @@ class TestTaskDeduplication:
         # Mock failed send
         mock_ctx["whatsapp_service"].send_message.return_value = None
 
-        with pytest.raises(Exception, match="Failed to send message"):
+        # Should raise Retry exception on first attempt
+        with pytest.raises(Retry):
             await send_whatsapp_message(mock_ctx, "+1234567890", "Hello", "send123")
 
         # Should NOT mark as processed on failure
@@ -216,7 +222,7 @@ class TestTaskDeduplication:
 
         # Mock services
         with patch(
-            "app.workers.tasks.get_inventory_search_service"
+            "app.workers.task_functions.get_inventory_search_service"
         ) as mock_get_service:
             mock_service = AsyncMock()
             mock_service.process_message.return_value = {"response": "Test"}

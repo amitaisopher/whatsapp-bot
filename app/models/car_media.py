@@ -25,6 +25,7 @@ class StorageProvider(StrEnum):
     S3 = "s3"
     LOCAL = "local"
     SUPABASE = "supabase"
+    DROPBOX = "dropbox"
 
 
 class CarMediaBase(BaseModel):

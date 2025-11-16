@@ -19,3 +19,8 @@ wheels/
 .env.staging
 .env.development
 .env.docker
+# Temporary documentation files (use CHANGELOG.md instead)
+*_SUMMARY.md
+REFACTORING_SUMMARY.md
+IMPLEMENTATION_SUMMARY.md
+QUICKREF.md

@@ -15,3 +15,5 @@
  
 ## PR instructions
 - Always run `uvx ruff check . --fix`, and `uvx ruff format`, and `uv run pytest`  before committing.
+- Always make sure to update doc files (located in docs folder) as well as Readme.md file.
+- Document that changes of refactors and updates in CHANGELOG.md file - this will help to keep track any changes made to the code over time in chronological manner.
